@@ -1,0 +1,29 @@
+name: nagare
+description: Draw a year of GitHub activity as an ink koi pond.
+inputs:
+  login:
+    description: GitHub login to draw.
+    default: ${{ github.repository_owner }}
+  output:
+    description: Path of the SVG to write.
+    default: nagare/nagare.svg
+  theme:
+    description: auto (follows the reader's light/dark setting), paper or night.
+    default: auto
+  token:
+    description: Token for the GraphQL API. A PAT with read:user also counts private activity.
+    default: ${{ github.token }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+        PYTHONPATH: ${{ github.action_path }}
+      run: |
+        mkdir -p "$(dirname '${{ inputs.output }}')"
+        python -m nagare.fetch "${{ inputs.login }}" -o "$RUNNER_TEMP/snapshot.json"
+        python -m nagare "$RUNNER_TEMP/snapshot.json" -o "${{ inputs.output }}" --theme "${{ inputs.theme }}"
