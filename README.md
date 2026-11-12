@@ -65,7 +65,9 @@ To draw one current per language instead of one per repository, pass
 mostly written in, by bytes, from GitHub's language breakdown; repositories
 GitHub reports no language for (and private work the token cannot see) keep no
 current, so their contributions fall to the outer current. Grouping asks the API
-once per repository, so it needs a token: the action passes its own.
+once per repository, so it needs a token: the action passes its own. With a
+personal token that can read private repositories, their work joins the
+current of their language, so the language shows while the name never does.
 
 The built-in token sees public activity only. To give private repositories
 their own current and koi (never their names), create a fine-grained personal

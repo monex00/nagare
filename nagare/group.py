@@ -46,15 +46,26 @@ def dominant(counts: dict) -> str | None:
     return max(counts, key=counts.get) if counts else None
 
 
+def projects(snap: dict) -> list:
+    """The repositories that count as projects.
+
+    The profile repository (named like the login) is README upkeep, not a
+    project: the renderer leaves it out by name, which a language current can no
+    longer match, so it is left out here before grouping.
+    """
+    login = snap["login"].lower()
+    return [r for r in snap["repos"] if (r.get("name") or "").lower() != login]
+
+
 def by_language(snap: dict, by_id: dict) -> dict:
     """snap with its repositories replaced by one entry per language.
 
     by_id maps repository id to that repository's language bytes. Repositories
-    missing from it are dropped, so their contributions fall to the outer
-    current instead of disappearing.
+    missing from it, and the profile repository, are dropped, so their
+    contributions fall to the outer current instead of disappearing.
     """
     groups = {}
-    for repo in snap["repos"]:
+    for repo in projects(snap):
         lang = dominant(by_id.get(repo["id"]) or {})
         if not lang:
             continue
@@ -77,7 +88,7 @@ def by_language(snap: dict, by_id: dict) -> dict:
 
 def regroup(snap: dict, token: str) -> dict:
     """by_language() for a fresh snapshot, asking GitHub for the languages."""
-    by_id = {repo["id"]: languages(token, repo["id"]) for repo in snap["repos"]}
+    by_id = {repo["id"]: languages(token, repo["id"]) for repo in projects(snap)}
     out = by_language(snap, by_id)
     unattributed = sum(1 for counts in by_id.values() if not counts)
     print(f"{len(out['repos'])} languages, {unattributed} repositories without a language")
