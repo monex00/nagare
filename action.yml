@@ -10,6 +10,9 @@ inputs:
   theme:
     description: auto (follows the reader's light/dark setting), paper or night.
     default: auto
+  group-by:
+    description: repo (one current per repository) or language (one current per language).
+    default: repo
   token:
     description: Token for the GraphQL API. A PAT with read:user also counts private activity.
     default: ${{ github.token }}
@@ -26,4 +29,5 @@ runs:
       run: |
         mkdir -p "$(dirname '${{ inputs.output }}')"
         python -m nagare.fetch "${{ inputs.login }}" -o "$RUNNER_TEMP/snapshot.json"
-        python -m nagare "$RUNNER_TEMP/snapshot.json" -o "${{ inputs.output }}" --theme "${{ inputs.theme }}"
+        python -m nagare "$RUNNER_TEMP/snapshot.json" -o "${{ inputs.output }}" --theme "${{ inputs.theme }}" \
+          --group-by "${{ inputs.group-by }}"
