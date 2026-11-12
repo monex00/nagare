@@ -26,7 +26,7 @@ recent months get more room; the month marks follow it.
 
 With `group-by: language` a current is a language instead of a repository, and
 everything else stays the same: a repository joins the current of the language
-it is mostly written in.
+it is mostly written in (see [One current per language](#one-current-per-language)).
 
 Each current is drawn as a bundle of ink streamlines spread evenly across its
 width. The middle lines persist longest: as a current thins, its outer lines
@@ -60,21 +60,40 @@ Copy [examples/profile-workflow.yml](examples/profile-workflow.yml) to
 The image follows the reader's light or dark setting. To pin one look, pass
 `theme: paper` or `theme: night` to the action (or `--theme` on the command line).
 
-To draw one current per language instead of one per repository, pass
-`group-by: language`. Each repository joins the current of the language it is
-mostly written in, by bytes, from GitHub's language breakdown; repositories
-GitHub reports no language for (and private work the token cannot see) keep no
-current, so their contributions fall to the outer current. Grouping asks the API
-once per repository, so it needs a token: the action passes its own. With a
-personal token that can read private repositories, their work joins the
-current of their language, so the language shows while the name never does.
-
 The built-in token sees public activity only. To give private repositories
 their own current and koi (never their names), create a fine-grained personal
 token with read-only access to repository contents, save it as the
 `NAGARE_TOKEN` secret of your profile repository, and keep "Include private
 contributions on my profile" on in your GitHub settings. The example workflow
 picks the secret up when it exists.
+
+### One current per language
+
+<img src="demo/nagare-language.svg" width="100%" alt="nagare, grouped by language" />
+
+<sub>The same sample with two more projects, grouped by language: django joins
+pytorch in the Python current, tokio joins rust in the Rust one.</sub>
+
+By default every repository is its own current. To draw one current per
+language instead, add `group-by: language` to the action (the example workflow
+has the line, commented out):
+
+```yaml
+      - uses: monex00/nagare@main
+        with:
+          token: ${{ secrets.NAGARE_TOKEN || github.token }}
+          group-by: language
+```
+
+Each repository joins the current of the language it is mostly written in, by
+bytes, from GitHub's language breakdown, so a current reads as *Python* rather
+than as one of several Python projects. Koi, sizes, depth and the vermilion koi
+work as before, per language. Repositories GitHub reports no language for (and
+private work the token cannot see) keep no current, so their contributions fall
+to the outer current. Grouping asks the API once per repository, so it needs a
+token: the action passes its own. With a personal token that can read private
+repositories, their work joins the current of their language, so the language
+shows while the name never does.
 
 ## Run locally
 
@@ -84,6 +103,7 @@ python -m nagare snapshot.json -o nagare.svg            # --theme auto|paper|nig
 GITHUB_TOKEN=$(gh auth token) \
   python -m nagare snapshot.json -o nagare.svg --group-by language
 python tools/sample.py -o demo/sample.json                # the sample used above
+python tools/sample.py --by-language -o demo/sample-language.json
 python tools/preview.py nagare.svg out/ --video 12     # playwright + ffmpeg
 ```
 
