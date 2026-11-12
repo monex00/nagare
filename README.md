@@ -24,6 +24,10 @@ its own koi: it is labelled *private work* when GitHub reports that most of it
 is private, *other activity* otherwise. The time axis widens toward today, so
 recent months get more room; the month marks follow it.
 
+With `group-by: language` a current is a language instead of a repository, and
+everything else stays the same: a repository joins the current of the language
+it is mostly written in.
+
 Each current is drawn as a bundle of ink streamlines spread evenly across its
 width. The middle lines persist longest: as a current thins, its outer lines
 end one by one, and it dries into a single thread where the work stopped. The
@@ -33,7 +37,7 @@ lines drift slowly toward today.
 
 | | Driven by |
 | --- | --- |
-| One koi | each of your most active repositories (up to eight), plus one for unattributed work |
+| One koi | each of your most active repositories (or languages), up to eight, plus one for unattributed work |
 | Its path | the centre of its current, over the longest stretch wide enough to swim |
 | Size | contributions, relative to your biggest project |
 | Depth | time since the last contribution, relative to your most recent project: that one swims at the surface with a shadow, older work sinks and fades |
@@ -56,6 +60,13 @@ Copy [examples/profile-workflow.yml](examples/profile-workflow.yml) to
 The image follows the reader's light or dark setting. To pin one look, pass
 `theme: paper` or `theme: night` to the action (or `--theme` on the command line).
 
+To draw one current per language instead of one per repository, pass
+`group-by: language`. Each repository joins the current of the language it is
+mostly written in, by bytes, from GitHub's language breakdown; repositories
+GitHub reports no language for (and private work the token cannot see) keep no
+current, so their contributions fall to the outer current. Grouping asks the API
+once per repository, so it needs a token: the action passes its own.
+
 The built-in token sees public activity only. To give private repositories
 their own current and koi (never their names), create a fine-grained personal
 token with read-only access to repository contents, save it as the
@@ -68,6 +79,8 @@ picks the secret up when it exists.
 ```sh
 GITHUB_TOKEN=$(gh auth token) python -m nagare.fetch <login> -o snapshot.json
 python -m nagare snapshot.json -o nagare.svg            # --theme auto|paper|night
+GITHUB_TOKEN=$(gh auth token) \
+  python -m nagare snapshot.json -o nagare.svg --group-by language
 python tools/sample.py -o demo/sample.json                # the sample used above
 python tools/preview.py nagare.svg out/ --video 12     # playwright + ffmpeg
 ```
